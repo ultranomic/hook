@@ -535,15 +535,14 @@ runs:
       id: check
       shell: bash
       run: |
-        CURRENT_VERSION="${{ steps.get-version.outputs.current-version }}"
-        PACKAGE_NAME="${{ inputs.package-name }}"
+        ANALYSIS_RESULT="${{ steps.analyze.outputs.version-bump }}"
         
-        # Check if this version is already published
-        if npm view "$PACKAGE_NAME@$CURRENT_VERSION" version 2>/dev/null; then
-          echo "Version $CURRENT_VERSION already exists, version bump needed"
+        # Version bump is needed if Gemini detected any changes requiring a bump
+        if [ "$ANALYSIS_RESULT" = "major" ] || [ "$ANALYSIS_RESULT" = "minor" ] || [ "$ANALYSIS_RESULT" = "patch" ]; then
+          echo "Gemini analysis suggests $ANALYSIS_RESULT bump, version bump needed"
           echo "needs-bump=true" >> $GITHUB_OUTPUT
         else
-          echo "Version $CURRENT_VERSION not published, no bump needed"
+          echo "No changes detected that require version bump"
           echo "needs-bump=false" >> $GITHUB_OUTPUT
         fi
 
