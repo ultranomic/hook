@@ -4,9 +4,14 @@ on:
   pull_request:
     branches:
       - main
-  push:
-    branches:
-      - main
+  merge_group:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   test:
@@ -15,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [24]
+        node-version: [18, 20, 22, 24]
 
     steps:
       - name: Checkout repository
@@ -39,26 +44,18 @@ jobs:
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
-          path: |
-            ${{ env.STORE_PATH }}
-            node_modules
-          key: ${{ runner.os }}-pnpm-${{ matrix.node-version }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-${{ matrix.node-version }}-
-            ${{ runner.os }}-pnpm-
+            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Run tests
+      - name: Run full pipeline
         run: |
-          pnpm test
-          echo "✅ Tests passed on Node.js ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Build package
-        run: |
-          pnpm run build
-          echo "🔨 Build completed on Node.js ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+          pnpm run prepublishOnly
+          echo "✅ Full pipeline passed on Node.js ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Verify package contents
         run: |
