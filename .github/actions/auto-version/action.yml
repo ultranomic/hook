@@ -389,7 +389,10 @@ runs:
           
           let analysisPrompt;
           
-          if (customPrompt) {
+          // Always get template for changelog generation
+          const template = projectTemplates[projectType] || projectTemplates['generic'];
+          
+          if (customPrompt && customPrompt.trim()) {
             // Use custom prompt if provided
             analysisPrompt = customPrompt + '\n\n## Changed Files:\n' + 
               process.env.CHANGED_FILES + '\n\n## Commit Messages:\n' + 
@@ -397,7 +400,6 @@ runs:
               process.env.FULL_DIFF + '\n\nRespond with EXACTLY one word: "major", "minor", or "patch"';
           } else {
             // Use template-based prompt
-            const template = projectTemplates[projectType] || projectTemplates['generic'];
             
             const projectPrefix = packageName ? `The project "${packageName}" ` : 'This project ';
             const mainFilesNote = mainFiles ? `\n\nIMPORTANT: Pay special attention to changes in these main files: ${mainFiles}` : '';
