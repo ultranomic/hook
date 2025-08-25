@@ -1,32 +1,36 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { createSyncHookRegistry } from './sync-hook.ts';
+import { createSyncHooks } from './create-sync-hooks.ts';
 import type { Logger } from './logger.ts';
 
 describe('Sync Hook', () => {
   let mockLogger: Logger;
   let debugLogs: string[];
-  let errorLogs: Array<{ error: unknown; message: string }>;
+  let errorLogs: Array<{ object: unknown; message: string }>;
 
   beforeEach(() => {
     debugLogs = [];
     errorLogs = [];
     mockLogger = {
-      debug: (message: string) => {
-        debugLogs.push(message);
+      debug: (objectOrMessage: unknown, message?: string) => {
+        if (typeof objectOrMessage === 'string') {
+          debugLogs.push(objectOrMessage);
+        } else if (message) {
+          debugLogs.push(message);
+        }
       },
       error: (objectOrMessage: unknown, message?: string) => {
         if (typeof objectOrMessage === 'string') {
-          errorLogs.push({ error: undefined, message: objectOrMessage });
+          errorLogs.push({ object: undefined, message: objectOrMessage });
         } else if (message) {
-          errorLogs.push({ error: objectOrMessage, message });
+          errorLogs.push({ object: objectOrMessage, message });
         }
       },
     };
   });
 
   test('should register and fire hooks', () => {
-    const hook = createSyncHookRegistry<{ test: [string] }>();
+    const hook = createSyncHooks<{ test: [string] }>();
     let result = '';
 
     hook.register('test', (value) => {
@@ -38,7 +42,7 @@ describe('Sync Hook', () => {
   });
 
   test('should handle multiple actions in order', () => {
-    const hook = createSyncHookRegistry<{ test: [number] }>();
+    const hook = createSyncHooks<{ test: [number] }>();
     const results: number[] = [];
 
     hook.register('test', (value) => results.push(value * 2), 1);
@@ -50,7 +54,7 @@ describe('Sync Hook', () => {
   });
 
   test('should handle multiple actions with same order', () => {
-    const hook = createSyncHookRegistry<{ test: [string] }>();
+    const hook = createSyncHooks<{ test: [string] }>();
     const results: string[] = [];
 
     hook.register('test', (value) => results.push(`a-${value}`));
@@ -61,7 +65,7 @@ describe('Sync Hook', () => {
   });
 
   test('should log debug messages when logger provided', () => {
-    const hook = createSyncHookRegistry<{ test: [string] }>({ logger: mockLogger });
+    const hook = createSyncHooks<{ test: [string] }>({ logger: mockLogger });
 
     const namedAction = function testAction(value: string) {
       return value;
@@ -77,7 +81,7 @@ describe('Sync Hook', () => {
   });
 
   test('should handle errors and log them', () => {
-    const hook = createSyncHookRegistry<{ test: [string] }>({ logger: mockLogger });
+    const hook = createSyncHooks<{ test: [string] }>({ logger: mockLogger });
     const testError = new Error('Test error');
 
     const errorAction = function errorAction() {
@@ -91,12 +95,13 @@ describe('Sync Hook', () => {
     }, testError);
 
     assert.strictEqual(errorLogs.length, 1);
-    assert.strictEqual(errorLogs[0].error.error, testError);
+    // @ts-expect-error - errorLogs[0].object is unknown
+    assert.strictEqual(errorLogs[0].object.error, testError);
     assert(errorLogs[0].message.includes("Hook action 'errorAction' for 'test' failed"));
   });
 
   test('should handle errors without logger', () => {
-    const hook = createSyncHookRegistry<{ test: [] }>();
+    const hook = createSyncHooks<{ test: [] }>();
     const testError = new Error('Test error');
 
     hook.register('test', () => {
@@ -109,7 +114,7 @@ describe('Sync Hook', () => {
   });
 
   test('should clear all hooks', () => {
-    const hook = createSyncHookRegistry<{ test: [string] }>();
+    const hook = createSyncHooks<{ test: [string] }>();
     let called = false;
 
     hook.register('test', () => {
@@ -123,7 +128,7 @@ describe('Sync Hook', () => {
   });
 
   test('should handle hooks with no actions', () => {
-    const hook = createSyncHookRegistry<{ test: [string] }>();
+    const hook = createSyncHooks<{ test: [string] }>();
 
     // Should not throw
     assert.doesNotThrow(() => {
@@ -132,7 +137,7 @@ describe('Sync Hook', () => {
   });
 
   test('should handle complex payloads', () => {
-    const hook = createSyncHookRegistry<{
+    const hook = createSyncHooks<{
       complex: [string, number, { data: boolean }];
     }>();
 

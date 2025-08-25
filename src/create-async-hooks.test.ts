@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert';
-import { createAsyncHookRegistry } from './async-hook.ts';
+import { createAsyncHooks } from './create-async-hooks.ts';
 import type { Logger } from './logger.ts';
 
 describe('Async Hook', () => {
@@ -30,7 +30,7 @@ describe('Async Hook', () => {
   });
 
   test('should register and fire async hooks', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>();
+    const hook = createAsyncHooks<{ test: [string] }>();
     let result = '';
 
     hook.register('test', async (value) => {
@@ -42,7 +42,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle multiple async actions in order', async () => {
-    const hook = createAsyncHookRegistry<{ test: [number] }>();
+    const hook = createAsyncHooks<{ test: [number] }>();
     const results: number[] = [];
 
     hook.register(
@@ -76,7 +76,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle sync actions in async hook', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>();
+    const hook = createAsyncHooks<{ test: [string] }>();
     let result = '';
 
     hook.register('test', (value) => {
@@ -89,7 +89,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle mixed sync and async actions', async () => {
-    const hook = createAsyncHookRegistry<{ test: [number] }>();
+    const hook = createAsyncHooks<{ test: [number] }>();
     const results: number[] = [];
 
     hook.register('test', (value) => {
@@ -106,7 +106,7 @@ describe('Async Hook', () => {
   });
 
   test('should log debug messages when logger provided', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>({ logger: mockLogger });
+    const hook = createAsyncHooks<{ test: [string] }>({ logger: mockLogger });
 
     const namedAction = async function testAction(value: string) {
       return value;
@@ -122,7 +122,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle errors and log them', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>({ logger: mockLogger });
+    const hook = createAsyncHooks<{ test: [string] }>({ logger: mockLogger });
     const testError = new Error('Test error');
 
     const errorAction = async function errorAction() {
@@ -142,7 +142,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle sync errors in async hook', async () => {
-    const hook = createAsyncHookRegistry<{ test: [] }>({ logger: mockLogger });
+    const hook = createAsyncHooks<{ test: [] }>({ logger: mockLogger });
     const testError = new Error('Sync error');
 
     hook.register('test', () => {
@@ -155,7 +155,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle errors without logger', async () => {
-    const hook = createAsyncHookRegistry<{ test: [] }>();
+    const hook = createAsyncHooks<{ test: [] }>();
     const testError = new Error('Test error');
 
     hook.register('test', async () => {
@@ -168,7 +168,7 @@ describe('Async Hook', () => {
   });
 
   test('should clear all hooks', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>();
+    const hook = createAsyncHooks<{ test: [string] }>();
     let called = false;
 
     hook.register('test', async () => {
@@ -182,7 +182,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle hooks with no actions', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>();
+    const hook = createAsyncHooks<{ test: [string] }>();
 
     // Should not throw
     await assert.doesNotThrow(async () => {
@@ -191,7 +191,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle complex payloads', async () => {
-    const hook = createAsyncHookRegistry<{
+    const hook = createAsyncHooks<{
       complex: [string, number, { data: boolean }];
     }>();
 
@@ -209,7 +209,7 @@ describe('Async Hook', () => {
   });
 
   test('should execute actions in batches by order', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>();
+    const hook = createAsyncHooks<{ test: [string] }>();
     const executionOrder: string[] = [];
 
     // Order 0 - should execute first
@@ -250,7 +250,7 @@ describe('Async Hook', () => {
   });
 
   test('should handle Promise.try functionality', async () => {
-    const hook = createAsyncHookRegistry<{ test: [] }>();
+    const hook = createAsyncHooks<{ test: [] }>();
     let syncCalled = false;
     let asyncCalled = false;
 
@@ -270,7 +270,7 @@ describe('Async Hook', () => {
   });
 
   test('should fail fast when an action throws an error', async () => {
-    const hook = createAsyncHookRegistry<{ test: [string] }>({ logger: mockLogger });
+    const hook = createAsyncHooks<{ test: [string] }>({ logger: mockLogger });
     const results: string[] = [];
     const testError = new Error('Action 2 error');
 
@@ -311,7 +311,7 @@ describe('Async Hook', () => {
   });
 
   test('should stop at first batch that fails', async () => {
-    const hook = createAsyncHookRegistry<{ test: [] }>({ logger: mockLogger });
+    const hook = createAsyncHooks<{ test: [] }>({ logger: mockLogger });
     const executionOrder: string[] = [];
     const testError = new Error('Batch error');
 
@@ -357,7 +357,7 @@ describe('Async Hook', () => {
   });
 
   test('should log the first error that occurs', async () => {
-    const hook = createAsyncHookRegistry<{ test: [] }>({ logger: mockLogger });
+    const hook = createAsyncHooks<{ test: [] }>({ logger: mockLogger });
     const error1 = new Error('Error 1');
     const error2 = new Error('Error 2');
 

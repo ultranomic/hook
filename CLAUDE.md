@@ -7,10 +7,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Build and Development
 
 ```bash
-npm run build        # Build TypeScript using tsgo (experimental TypeScript compiler)
-npm run clean        # Remove dist directory
-npm test            # Run all tests using Node.js built-in test runner
-npm run prepublishOnly  # Full pipeline: clean → build → test
+pnpm run build        # Build TypeScript using tsgo (experimental TypeScript compiler)
+pnpm run clean        # Remove dist directory
+pnpm test            # Run all tests using Node.js built-in test runner
+pnpm run prepublishOnly  # Full pipeline: clean → build → test
 
 # Run specific test file
 node --test src/async-hook.test.ts
@@ -20,7 +20,7 @@ node --test src/sync-hook.test.ts
 ### Publishing
 
 ```bash
-npm version patch|minor|major  # Update version before pushing to main
+pnpm version patch|minor|major  # Update version before pushing to main
 # Push to main branch - GitHub Actions will auto-publish if version changed
 ```
 

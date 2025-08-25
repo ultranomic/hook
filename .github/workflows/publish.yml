@@ -36,11 +36,11 @@ jobs:
             echo "diff-range=$DIFF_RANGE" >> $GITHUB_OUTPUT
             exit 0
           fi
-          
+
           # If no push event range, try to get last release commit
           echo "No push event range available, checking for last release..."
           LAST_RELEASE_COMMIT=$(gh api repos/${{ github.repository }}/releases/latest --jq '.target_commitish' 2>/dev/null || echo "")
-          
+
           if [ -n "$LAST_RELEASE_COMMIT" ]; then
             DIFF_RANGE="${LAST_RELEASE_COMMIT}..${{ github.sha }}"
             echo "Using last release commit as base: $DIFF_RANGE"
@@ -121,7 +121,7 @@ jobs:
           VERSION="${{ steps.version-check.outputs.version }}"
           CHANGELOG="${{ steps.auto-version.outputs.changelog }}"
           CURRENT_VERSION="${{ steps.auto-version.outputs.current-version }}"
-          
+
           # Construct release notes from available data
           RELEASE_NOTES="Version $VERSION of @ultranomic/hook is now available!
 
@@ -139,7 +139,7 @@ jobs:
           ---
 
           **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${CURRENT_VERSION}...v$VERSION"
-          
+
           gh release create "v$VERSION" \
             --title "Release v$VERSION" \
             --notes "$RELEASE_NOTES"
@@ -151,7 +151,7 @@ jobs:
         run: |
           # Verify package contents before publishing
           pnpm pack
-          
+
           # Publish with retry logic
           for i in {1..3}; do
             if pnpm publish --access public --no-git-checks; then
@@ -175,7 +175,7 @@ jobs:
         run: |
           echo "🏷️ Created GitHub release: [v${{ steps.version-check.outputs.version }}](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version-check.outputs.version }})" >> $GITHUB_STEP_SUMMARY
           echo "📦 Published to npm: [@ultranomic/hook@${{ steps.version-check.outputs.version }}](https://www.npmjs.com/package/@ultranomic/hook/v/${{ steps.version-check.outputs.version }})" >> $GITHUB_STEP_SUMMARY
-          
+
           # Add changelog to summary if available
           if [ -n "${{ steps.auto-version.outputs.changelog }}" ]; then
             echo "" >> $GITHUB_STEP_SUMMARY

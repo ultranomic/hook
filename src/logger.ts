@@ -1,5 +1,5 @@
 interface LoggerMethod {
-  (object: unknown, message: string): unknown;
+  (object: object, message: string): unknown;
   (message: string): unknown;
 }
 export type Logger = {

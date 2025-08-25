@@ -95,7 +95,7 @@ The action intelligently detects your project type by analyzing:
 | `new-version`     | New version after bump (if bumped)                |
 | `needs-bump`      | Whether version bump was needed                   |
 | `version-bumped`  | Whether version was actually bumped               |
-| `changelog`       | AI-generated changelog for this version          |
+| `changelog`       | AI-generated changelog for this version           |
 
 ## Usage Examples
 
@@ -160,7 +160,7 @@ The action intelligently detects your project type by analyzing:
 
 ### Using Changelog in Releases
 
-```yaml
+````yaml
 - name: Auto Version Bump
   id: version
   uses: ./.github/actions/auto-version
@@ -177,15 +177,15 @@ The action intelligently detects your project type by analyzing:
     release_name: Release v${{ steps.version.outputs.new-version }}
     body: |
       ## What's Changed
-      
+
       ${{ steps.version.outputs.changelog }}
-      
+
       ## Installation
-      
+
       ```bash
       npm install my-package@${{ steps.version.outputs.new-version }}
       ```
-```
+````
 
 ### Disable Auto Push
 
@@ -236,7 +236,7 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.new-version }}"
           CHANGELOG="${{ steps.version.outputs.changelog }}"
-          
+
           RELEASE_NOTES="Version $VERSION is now available!
 
           ## What's Changed
@@ -248,7 +248,7 @@ jobs:
           \`\`\`bash
           npm install my-package@$VERSION
           \`\`\`"
-          
+
           gh release create "v$VERSION" \
             --title "Release v$VERSION" \
             --notes "$RELEASE_NOTES"

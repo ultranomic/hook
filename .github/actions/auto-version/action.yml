@@ -78,19 +78,19 @@ runs:
       run: |
         DIFF_RANGE="${{ inputs.diff-range }}"
         echo "Analyzing changes in range: $DIFF_RANGE"
-        
+
         # Get changed files
         CHANGED_FILES=$(git diff --name-only $DIFF_RANGE || echo "")
         echo "changed-files<<EOF" >> $GITHUB_OUTPUT
         echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
-        
+
         # Get commit messages
         COMMIT_MESSAGES=$(git log --oneline $DIFF_RANGE || echo "")
         echo "commit-messages<<EOF" >> $GITHUB_OUTPUT
         echo "$COMMIT_MESSAGES" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
-        
+
         # Get full diff (truncated for API limits)
         FULL_DIFF=$(git diff $DIFF_RANGE | head -c 10000 || echo "")
         echo "full-diff<<EOF" >> $GITHUB_OUTPUT
@@ -261,7 +261,7 @@ runs:
           // Auto-detect project configuration
           const fs = require('fs');
           const path = require('path');
-          
+
           function detectProjectType() {
             const inputType = '${{ inputs.project-type }}';
             if (inputType && inputType !== 'auto') return inputType;
@@ -307,7 +307,7 @@ runs:
             
             return 'generic';
           }
-          
+
           function detectPackageName() {
             const inputName = '${{ inputs.package-name }}';
             if (inputName) return inputName;
@@ -353,7 +353,7 @@ runs:
             // Fallback to repository name
             return process.env.GITHUB_REPOSITORY?.split('/')?.pop() || 'this project';
           }
-          
+
           function detectMainFiles(projectType) {
             const inputFiles = '${{ inputs.main-files }}';
             if (inputFiles) return inputFiles;
@@ -376,22 +376,22 @@ runs:
             
             return files.join(',') || template?.mainFiles || '';
           }
-          
+
           const projectType = detectProjectType();
           const packageName = detectPackageName();
           const mainFiles = detectMainFiles(projectType);
           const customPrompt = '${{ inputs.custom-prompt }}';
-          
+
           console.log(`🔍 Auto-detected:`);
           console.log(`  Project Type: ${projectType}`);
           console.log(`  Package Name: ${packageName}`);
           console.log(`  Main Files: ${mainFiles}`);
-          
+
           let analysisPrompt;
-          
+
           // Always get template for changelog generation
           const template = projectTemplates[projectType] || projectTemplates['generic'];
-          
+
           if (customPrompt && customPrompt.trim()) {
             // Use custom prompt if provided
             analysisPrompt = customPrompt + '\n\n## Changed Files:\n' + 
@@ -536,7 +536,7 @@ runs:
       shell: bash
       run: |
         ANALYSIS_RESULT="${{ steps.analyze.outputs.version-bump }}"
-        
+
         # Version bump is needed if Gemini detected any changes requiring a bump
         if [ "$ANALYSIS_RESULT" = "major" ] || [ "$ANALYSIS_RESULT" = "minor" ] || [ "$ANALYSIS_RESULT" = "patch" ]; then
           echo "Gemini analysis suggests $ANALYSIS_RESULT bump, version bump needed"
@@ -553,18 +553,18 @@ runs:
       run: |
         BUMP_TYPE="${{ steps.analyze.outputs.version-bump }}"
         echo "Bumping version: $BUMP_TYPE"
-        
+
         # Configure git
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        
+
         # Bump version using npm
         npm version $BUMP_TYPE --no-git-tag-version
-        
+
         NEW_VERSION=$(node -p "require('./package.json').version")
         echo "new-version=$NEW_VERSION" >> $GITHUB_OUTPUT
         echo "version-bumped=true" >> $GITHUB_OUTPUT
-        
+
         echo "✅ Version bumped from ${{ steps.get-version.outputs.current-version }} to $NEW_VERSION"
 
     - name: Commit version bump
@@ -573,7 +573,7 @@ runs:
       run: |
         NEW_VERSION="${{ steps.bump.outputs.new-version }}"
         BUMP_TYPE="${{ steps.analyze.outputs.version-bump }}"
-        
+
         # Commit the version bump
         git add package.json pnpm-lock.yaml
         git commit -m "chore: bump version to $NEW_VERSION [skip version]
@@ -581,12 +581,12 @@ runs:
         Automated version bump based on Gemini analysis:
         - Analysis: $BUMP_TYPE version bump
         - Previous commits analyzed: ${{ inputs.diff-range }}
-        
+
         This commit includes [skip version] to prevent recursive workflows."
-        
+
         # Create the tag
         git tag "v$NEW_VERSION"
-        
+
         echo "📝 Committed version bump and created tag v$NEW_VERSION"
 
     - name: Push version changes
@@ -595,11 +595,11 @@ runs:
       shell: bash
       run: |
         NEW_VERSION="${{ steps.bump.outputs.new-version }}"
-        
+
         # Push the commit and tag
         git push origin HEAD
         git push origin "v$NEW_VERSION"
-        
+
         echo "🚀 Pushed version bump commit and tag v$NEW_VERSION to GitHub"
 
     - name: Summary
@@ -611,7 +611,7 @@ runs:
         echo "| Current Version | ${{ steps.get-version.outputs.current-version }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Recommended Bump | ${{ steps.analyze.outputs.version-bump }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Needs Bump | ${{ steps.check.outputs.needs-bump }} |" >> $GITHUB_STEP_SUMMARY
-        
+
         if [ "${{ steps.bump.outputs.version-bumped }}" = "true" ]; then
           echo "| New Version | ${{ steps.bump.outputs.new-version }} |" >> $GITHUB_STEP_SUMMARY
           if [ "${{ inputs.auto-push }}" = "true" ]; then
@@ -624,7 +624,7 @@ runs:
         else
           echo "| Status | ⏭️ No bump needed |" >> $GITHUB_STEP_SUMMARY
         fi
-        
+
         # Add changelog to summary if available
         if [ -n "${{ steps.analyze.outputs.changelog }}" ]; then
           echo "" >> $GITHUB_STEP_SUMMARY

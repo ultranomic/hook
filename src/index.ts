@@ -1,2 +1,2 @@
-export * from './async-hook.ts';
-export * from './sync-hook.ts';
+export * from './create-async-hooks.ts';
+export * from './create-sync-hooks.ts';

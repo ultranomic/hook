@@ -5,6 +5,7 @@ A lightweight TypeScript library for managing synchronous and asynchronous hooks
 ## Installation
 
 ```bash
+pnpm add @ultranomic/hook
 npm install @ultranomic/hook
 ```
 
@@ -97,16 +98,16 @@ await hooks.fire('test');
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Run tests
-npm test
+pnpm test
 
 # Build
-npm run build
+pnpm run build
 
 # Type check
-npm run typecheck
+pnpm run typecheck
 ```
 
 ## CI/CD Setup
@@ -133,7 +134,7 @@ This repository includes GitHub Actions workflows for:
 
 3. Update package version:
    - The workflow only publishes when the version in `package.json` changes
-   - Update the version before pushing to main: `npm version patch/minor/major`
+   - Update the version before pushing to main: `pnpm version patch/minor/major`
 
 The workflow will automatically:
 
