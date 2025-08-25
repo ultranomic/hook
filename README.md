@@ -16,13 +16,15 @@ npm install @ultranomic/hook
 - ⚡ Fast-fail behavior on errors
 - 📝 Optional logging support
 - 💪 Full TypeScript support with strong typing
+- 🚀 Zero runtime dependencies
+- 📦 ESM-only with modern TypeScript
 
 ## Usage
 
 ### Async Hooks
 
 ```typescript
-import { createAsyncHookRegistry } from '@ultranomic/hook';
+import { createAsyncHooks } from '@ultranomic/hook';
 
 // Define your hook types
 type MyHooks = {
@@ -31,7 +33,7 @@ type MyHooks = {
 };
 
 // Create hook registry
-const hooks = createAsyncHookRegistry<MyHooks>();
+const hooks = createAsyncHooks<MyHooks>();
 
 // Register actions
 hooks.register('beforeSave', async (data, userId) => {
@@ -45,13 +47,13 @@ await hooks.fire('beforeSave', 'my data', 123);
 ### Sync Hooks
 
 ```typescript
-import { createSyncHookRegistry } from '@ultranomic/hook';
+import { createSyncHooks } from '@ultranomic/hook';
 
 type MyHooks = {
   onClick: [event: MouseEvent];
 };
 
-const hooks = createSyncHookRegistry<MyHooks>();
+const hooks = createSyncHooks<MyHooks>();
 
 hooks.register('onClick', (event) => {
   console.log('Button clicked!', event);
@@ -75,7 +77,7 @@ hooks.register('beforeSave', action3, 5); // Executes between action1 and action
 Both sync and async hooks use fast-fail behavior:
 
 ```typescript
-const hooks = createAsyncHookRegistry<MyHooks>({
+const hooks = createAsyncHooks<MyHooks>({
   logger: console, // Optional logger for debugging
 });
 
@@ -94,28 +96,73 @@ hooks.register('test', async () => {
 await hooks.fire('test');
 ```
 
+## API Reference
+
+### `createAsyncHooks<T>(options?)`
+
+Creates a new asynchronous hook registry.
+
+**Parameters:**
+- `options.logger` (optional): Logger instance with `debug` and `error` methods
+
+**Returns:** Hook registry with methods:
+- `register(hookName, action, order?)`: Register an async action
+- `fire(hookName, ...args)`: Execute all registered actions for a hook
+- `clear(hookName?)`: Clear actions for a hook (or all hooks)
+
+### `createSyncHooks<T>(options?)`
+
+Creates a new synchronous hook registry.
+
+**Parameters:**
+- `options.logger` (optional): Logger instance with `debug` and `error` methods
+
+**Returns:** Hook registry with methods:
+- `register(hookName, action, order?)`: Register a sync action
+- `fire(hookName, ...args)`: Execute all registered actions for a hook
+- `clear(hookName?)`: Clear actions for a hook (or all hooks)
+
 ## Development
+
+**Requirements:**
+- Node.js ≥24.0.0
+- pnpm 10.15.0+
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Run tests
+# Run tests (using Node.js built-in test runner)
 pnpm test
 
-# Build
+# Build (uses experimental TypeScript compiler @typescript/native-preview)
 pnpm run build
 
-# Type check
-pnpm run typecheck
+# Format code
+pnpm run format
+
+# Clean build artifacts
+pnpm run clean
+
+# Full pipeline (clean → build → test)
+pnpm run prepublishOnly
 ```
+
+## Architecture
+
+This library follows a factory pattern where registry functions create typed hook instances. Key design patterns:
+
+- **Hook Registry Pattern**: Registries use nested Maps: `Map<hookName, Map<order, actions[]>>`
+- **Type-Safe Generics**: Hook types defined as `Record<string, unknown[]>` for full TypeScript inference
+- **Ordered Execution**: Actions grouped by order number, executed in batches
+- **Fast-Fail Behavior**: Execution stops immediately on first error
 
 ## CI/CD Setup
 
 This repository includes GitHub Actions workflows for:
 
-- **CI**: Runs tests on all pull requests
-- **Publishing**: Automatically publishes to npm when changes are pushed to main
+- **CI**: Runs tests on Node.js 24 for all pull requests
+- **Publishing**: Automatically publishes to npm with auto-versioning when changes are pushed to main
 
 ### Setting up npm Publishing
 
@@ -132,17 +179,19 @@ This repository includes GitHub Actions workflows for:
    - Name: `NPM_TOKEN`
    - Value: Your npm token
 
-3. Update package version:
-   - The workflow only publishes when the version in `package.json` changes
-   - Update the version before pushing to main: `pnpm version patch/minor/major`
+3. Auto-versioning (optional):
+   - The workflow includes intelligent auto-versioning based on commit analysis
+   - Alternatively, manually update version: `pnpm version patch/minor/major`
+   - Requires `GEMINI_API_KEY` secret for AI-powered version analysis
 
 The workflow will automatically:
 
-- Run tests
-- Build the package
+- Analyze commits for version bumping (if `GEMINI_API_KEY` is configured)
+- Run the full test pipeline on Node.js 24
+- Build the package using experimental TypeScript compiler
 - Check if the version is already published
 - Publish to npm if it's a new version
-- Create a GitHub release
+- Create a GitHub release with changelog
 
 ## License
 
