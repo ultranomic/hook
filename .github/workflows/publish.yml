@@ -26,12 +26,38 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Determine diff range for version analysis
+        id: diff-range
+        run: |
+          # First try to use the push event's before/after
+          if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+            DIFF_RANGE="${{ github.event.before }}..${{ github.sha }}"
+            echo "Using push event range: $DIFF_RANGE"
+            echo "diff-range=$DIFF_RANGE" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          # If no push event range, try to get last release commit
+          echo "No push event range available, checking for last release..."
+          LAST_RELEASE_COMMIT=$(gh api repos/${{ github.repository }}/releases/latest --jq '.target_commitish' 2>/dev/null || echo "")
+          
+          if [ -n "$LAST_RELEASE_COMMIT" ]; then
+            DIFF_RANGE="${LAST_RELEASE_COMMIT}..${{ github.sha }}"
+            echo "Using last release commit as base: $DIFF_RANGE"
+            echo "diff-range=$DIFF_RANGE" >> $GITHUB_OUTPUT
+          else
+            echo "No releases found, using default: HEAD~1..HEAD"
+            echo "diff-range=HEAD~1..HEAD" >> $GITHUB_OUTPUT
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Auto-bump version if needed
         id: auto-version
         uses: ./.github/actions/auto-version
         with:
           gemini-api-key: ${{ secrets.GEMINI_API_KEY }}
-          diff-range: ${{ github.event.before != '0000000000000000000000000000000000000000' && format('{0}..{1}', github.event.before, github.sha) || 'HEAD~1..HEAD' }}
+          diff-range: ${{ steps.diff-range.outputs.diff-range }}
           auto-push: 'true'
 
       - name: Check if version needs publishing

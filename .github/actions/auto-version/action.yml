@@ -36,6 +36,10 @@ inputs:
     description: 'Automatically push version bump commit and tag to GitHub'
     required: false
     default: 'true'
+  model:
+    description: 'Gemini model to use for analysis (e.g., gemini-2.0-flash, gemini-1.5-flash, gemini-1.5-pro)'
+    required: false
+    default: 'gemini-2.0-flash'
 
 outputs:
   version-bump:
@@ -387,53 +391,37 @@ runs:
           
           if (customPrompt) {
             // Use custom prompt if provided
-            analysisPrompt = customPrompt + `
-
-## Changed Files:
-${process.env.CHANGED_FILES}
-
-## Commit Messages:
-${process.env.COMMIT_MESSAGES}
-
-## Full Diff:
-${process.env.FULL_DIFF}
-
-Respond with EXACTLY one word: "major", "minor", or "patch"`;
+            analysisPrompt = customPrompt + '\n\n## Changed Files:\n' + 
+              process.env.CHANGED_FILES + '\n\n## Commit Messages:\n' + 
+              process.env.COMMIT_MESSAGES + '\n\n## Full Diff:\n' + 
+              process.env.FULL_DIFF + '\n\nRespond with EXACTLY one word: "major", "minor", or "patch"';
           } else {
             // Use template-based prompt
             const template = projectTemplates[projectType] || projectTemplates['generic'];
             
-            analysisPrompt = `You are analyzing git changes to determine the appropriate semantic version bump for a ${template.description}.
-
-${packageName ? `The project "${packageName}" ` : 'This project '}follows semantic versioning (semver.org).
-
-SEMANTIC VERSIONING RULES:
-
-MAJOR (breaking changes):
-${template.major.map(rule => `- ${rule}`).join('\n')}
-
-MINOR (new features):
-${template.minor.map(rule => `- ${rule}`).join('\n')}
-
-PATCH (bug fixes/non-breaking):
-${template.patch.map(rule => `- ${rule}`).join('\n')}
-
-${mainFiles ? `IMPORTANT: Pay special attention to changes in these main files: ${mainFiles}` : ''}
-
-## Changed Files:
-${process.env.CHANGED_FILES}
-
-## Commit Messages:
-${process.env.COMMIT_MESSAGES}
-
-## Full Diff:
-${process.env.FULL_DIFF}
-
-Respond with EXACTLY one word: "major", "minor", or "patch"`;
+            const projectPrefix = packageName ? `The project "${packageName}" ` : 'This project ';
+            const mainFilesNote = mainFiles ? `\n\nIMPORTANT: Pay special attention to changes in these main files: ${mainFiles}` : '';
+            const majorRules = template.major.map(rule => `- ${rule}`).join('\n');
+            const minorRules = template.minor.map(rule => `- ${rule}`).join('\n');
+            const patchRules = template.patch.map(rule => `- ${rule}`).join('\n');
+            
+            analysisPrompt = 'You are analyzing git changes to determine the appropriate semantic version bump for a ' + template.description + '.\n\n' +
+              projectPrefix + 'follows semantic versioning (semver.org).\n\n' +
+              'SEMANTIC VERSIONING RULES:\n\n' +
+              'MAJOR (breaking changes):\n' + majorRules + '\n\n' +
+              'MINOR (new features):\n' + minorRules + '\n\n' +
+              'PATCH (bug fixes/non-breaking):\n' + patchRules + mainFilesNote + '\n\n' +
+              '## Changed Files:\n' + process.env.CHANGED_FILES + '\n\n' +
+              '## Commit Messages:\n' + process.env.COMMIT_MESSAGES + '\n\n' +
+              '## Full Diff:\n' + process.env.FULL_DIFF + '\n\n' +
+              'Respond with EXACTLY one word: "major", "minor", or "patch"';
           }
 
+          const selectedModel = '${{ inputs.model }}';
+          console.log(`Using model: ${selectedModel}`);
+
           try {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -470,23 +458,15 @@ Respond with EXACTLY one word: "major", "minor", or "patch"`;
             core.setOutput('version-bump', analysis);
             
             // Generate changelog with second API call
-            const changelogPrompt = `Generate a concise changelog for this ${template.description} release based on the following changes.
-
-Format the output as a bulleted list of changes, grouping by type (Features, Bug Fixes, etc.):
-
-## Changed Files:
-${process.env.CHANGED_FILES}
-
-## Commit Messages:
-${process.env.COMMIT_MESSAGES}
-
-## Full Diff:
-${process.env.FULL_DIFF}
-
-Provide a clean, user-friendly changelog focusing on what changed for end users. Exclude internal/build changes unless they affect functionality.`;
+            const changelogPrompt = 'Generate a concise changelog for this ' + template.description + ' release based on the following changes.\n\n' +
+              'Format the output as a bulleted list of changes, grouping by type (Features, Bug Fixes, etc.):\n\n' +
+              '## Changed Files:\n' + process.env.CHANGED_FILES + '\n\n' +
+              '## Commit Messages:\n' + process.env.COMMIT_MESSAGES + '\n\n' +
+              '## Full Diff:\n' + process.env.FULL_DIFF + '\n\n' +
+              'Provide a clean, user-friendly changelog focusing on what changed for end users. Exclude internal/build changes unless they affect functionality.';
 
             try {
-              const changelogResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+              const changelogResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${selectedModel}:generateContent?key=${process.env.GEMINI_API_KEY}`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json'
