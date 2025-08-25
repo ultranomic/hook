@@ -119,30 +119,31 @@ jobs:
         if: steps.version-check.outputs.skip == 'false'
         run: |
           VERSION="${{ steps.version-check.outputs.version }}"
-          CHANGELOG="${{ steps.auto-version.outputs.changelog }}"
           CURRENT_VERSION="${{ steps.auto-version.outputs.current-version }}"
-
-          # Construct release notes from available data
-          RELEASE_NOTES="Version $VERSION of @ultranomic/hook is now available!
+          
+          # Create release notes using a temporary file to handle special characters safely
+          cat > release_notes.md << 'RELEASE_EOF'
+          Version ${{ steps.version-check.outputs.version }} of @ultranomic/hook is now available!
 
           ## What's Changed
 
-          ${CHANGELOG:-"- Various improvements and fixes"}
+          ${{ steps.auto-version.outputs.changelog || '- Various improvements and fixes' }}
 
           ## Installation
 
-          \`\`\`bash
-          pnpm add @ultranomic/hook@$VERSION
-          npm install @ultranomic/hook@$VERSION
-          \`\`\`
+          ```bash
+          pnpm add @ultranomic/hook@${{ steps.version-check.outputs.version }}
+          npm install @ultranomic/hook@${{ steps.version-check.outputs.version }}
+          ```
 
           ---
 
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${CURRENT_VERSION}...v$VERSION"
+          **Full Changelog**: https://github.com/${{ github.repository }}/compare/v${{ steps.auto-version.outputs.current-version }}...v${{ steps.version-check.outputs.version }}
+          RELEASE_EOF
 
           gh release create "v$VERSION" \
             --title "Release v$VERSION" \
-            --notes "$RELEASE_NOTES"
+            --notes-file release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
