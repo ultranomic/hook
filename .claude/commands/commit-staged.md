@@ -15,3 +15,4 @@ Process:
 2. Review recent commit messages with git log for style consistency
 3. Create appropriate conventional commit message
 4. Commit using git commit with proper formatting
+5. Do not push unless asked to
