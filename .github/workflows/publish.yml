@@ -36,7 +36,7 @@ jobs:
         if: steps.version-check.outputs.skip == 'false'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
           registry-url: 'https://registry.npmjs.org'
 
       - name: Setup pnpm
@@ -58,9 +58,9 @@ jobs:
           path: |
             ${{ env.STORE_PATH }}
             node_modules
-          key: ${{ runner.os }}-pnpm-20-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-24-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-20-
+            ${{ runner.os }}-pnpm-24-
             ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
@@ -75,15 +75,6 @@ jobs:
         if: steps.version-check.outputs.skip == 'false'
         run: pnpm run build
 
-      - name: Publish to npm
-        if: steps.version-check.outputs.skip == 'false'
-        run: |
-          pnpm publish --access public
-          echo "✅ Successfully published version ${{ steps.version-check.outputs.version }} to npm" >> $GITHUB_STEP_SUMMARY
-          echo "📋 Install with: \`pnpm add @ultranomic/hook@${{ steps.version-check.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
       - name: Create GitHub Release
         if: steps.version-check.outputs.skip == 'false'
         uses: actions/create-release@v1
@@ -93,7 +84,7 @@ jobs:
           tag_name: v${{ steps.version-check.outputs.version }}
           release_name: Release v${{ steps.version-check.outputs.version }}
           body: |
-            Published version ${{ steps.version-check.outputs.version }} to npm
+            Version ${{ steps.version-check.outputs.version }} ready for release
 
             Install with:
             ```
@@ -102,6 +93,15 @@ jobs:
             ```
           draft: false
           prerelease: false
+
+      - name: Publish to npm
+        if: steps.version-check.outputs.skip == 'false'
+        run: |
+          pnpm publish --access public
+          echo "✅ Successfully published version ${{ steps.version-check.outputs.version }} to npm" >> $GITHUB_STEP_SUMMARY
+          echo "📋 Install with: \`pnpm add @ultranomic/hook@${{ steps.version-check.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Update workflow summary
         if: steps.version-check.outputs.skip == 'false'
