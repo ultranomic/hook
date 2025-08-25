@@ -1,0 +1,56 @@
+{
+  "name": "@ultranomic/hook",
+  "version": "1.0.0",
+  "description": "Lightweight TypeScript library for managing synchronous and asynchronous hooks with ordered execution",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist",
+    "src/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsgo",
+    "clean": "rm -rf dist",
+    "test": "node --test src/*.test.ts",
+    "format": "prettier --write .",
+    "prepublishOnly": "npm run clean && npm run build && npm test"
+  },
+  "keywords": [
+    "hooks",
+    "event",
+    "emitter",
+    "async",
+    "sync",
+    "typescript",
+    "registry",
+    "ordered",
+    "priority",
+    "plugin",
+    "lifecycle"
+  ],
+  "author": "Ultranomic",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ultranomic/hook.git"
+  },
+  "homepage": "https://github.com/ultranomic/hook#readme",
+  "bugs": {
+    "url": "https://github.com/ultranomic/hook/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "pnpm@10.15.0",
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "@typescript/native-preview": "latest"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
