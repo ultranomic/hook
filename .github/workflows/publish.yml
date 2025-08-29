@@ -122,7 +122,7 @@ jobs:
         run: |
           VERSION="${{ steps.version-check.outputs.version }}"
           CURRENT_VERSION="${{ steps.auto-version.outputs.current-version }}"
-          
+
           # Create release notes using a temporary file to handle special characters safely
           cat > release_notes.md << 'RELEASE_EOF'
           Version ${{ steps.version-check.outputs.version }} of ${{ steps.version-check.outputs.name }} is now available!
@@ -144,7 +144,7 @@ jobs:
           RELEASE_EOF
 
           gh release create "v$VERSION" \
-            --title "Release v$VERSION" \
+            --title "v$VERSION" \
             --notes-file release_notes.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -124,9 +124,11 @@ await hooks.fire('test');
 Creates a new asynchronous hook registry.
 
 **Parameters:**
+
 - `options.logger` (optional): Logger instance with `debug` and `error` methods
 
 **Returns:** Hook registry with methods:
+
 - `register(hookName, action, order?)`: Register an async action
 - `fire(hookName, ...args)`: Execute all registered actions for a hook
 - `clear(hookName?)`: Clear actions for a hook (or all hooks)
@@ -137,9 +139,11 @@ Creates a new asynchronous hook registry.
 Creates a new synchronous hook registry.
 
 **Parameters:**
+
 - `options.logger` (optional): Logger instance with `debug` and `error` methods
 
 **Returns:** Hook registry with methods:
+
 - `register(hookName, action, order?)`: Register a sync action
 - `fire(hookName, ...args)`: Execute all registered actions for a hook
 - `clear(hookName?)`: Clear actions for a hook (or all hooks)
@@ -148,6 +152,7 @@ Creates a new synchronous hook registry.
 ## Development
 
 **Requirements:**
+
 - Node.js ≥24.0.0
 - pnpm 10.15.0+
 
