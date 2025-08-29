@@ -72,6 +72,27 @@ hooks.register('beforeSave', action2, 10); // Executes second
 hooks.register('beforeSave', action3, 5); // Executes between action1 and action2
 ```
 
+### Logger Management
+
+You can provide a logger during initialization or set it later:
+
+```typescript
+// Option 1: Initialize with logger
+const hooks = createAsyncHooks<MyHooks>({
+  logger: console,
+});
+
+// Option 2: Set logger after initialization
+const hooks = createAsyncHooks<MyHooks>();
+hooks.setLogger(console);
+
+// Update logger
+hooks.setLogger(myCustomLogger);
+
+// Remove logger
+hooks.setLogger();
+```
+
 ### Error Handling
 
 Both sync and async hooks use fast-fail behavior:
@@ -109,6 +130,7 @@ Creates a new asynchronous hook registry.
 - `register(hookName, action, order?)`: Register an async action
 - `fire(hookName, ...args)`: Execute all registered actions for a hook
 - `clear(hookName?)`: Clear actions for a hook (or all hooks)
+- `setLogger(logger?)`: Set or update the logger after initialization
 
 ### `createSyncHooks<T>(options?)`
 
@@ -121,6 +143,7 @@ Creates a new synchronous hook registry.
 - `register(hookName, action, order?)`: Register a sync action
 - `fire(hookName, ...args)`: Execute all registered actions for a hook
 - `clear(hookName?)`: Clear actions for a hook (or all hooks)
+- `setLogger(logger?)`: Set or update the logger after initialization
 
 ## Development
 

@@ -1,5 +1,5 @@
 {
-  "name": "Test Metro dev environment",
+  "name": "dev environment",
   "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",

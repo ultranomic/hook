@@ -64,11 +64,13 @@ jobs:
         id: version-check
         run: |
           # Use the potentially new version after auto-bump
+          PACKAGE_NAME=$(node -p "require('./package.json').name")
           PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          echo "name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
           echo "version=$PACKAGE_VERSION" >> $GITHUB_OUTPUT
 
           # Check if this version is already published (early exit)
-          if npm view @ultranomic/hook@$PACKAGE_VERSION version 2>/dev/null; then
+          if npm view $PACKAGE_NAME@$PACKAGE_VERSION version 2>/dev/null; then
             echo "Version $PACKAGE_VERSION already published, skipping..." | tee -a $GITHUB_STEP_SUMMARY
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "## 📦 Publishing Skipped" >> $GITHUB_STEP_SUMMARY
@@ -123,7 +125,7 @@ jobs:
           
           # Create release notes using a temporary file to handle special characters safely
           cat > release_notes.md << 'RELEASE_EOF'
-          Version ${{ steps.version-check.outputs.version }} of @ultranomic/hook is now available!
+          Version ${{ steps.version-check.outputs.version }} of ${{ steps.version-check.outputs.name }} is now available!
 
           ## What's Changed
 
@@ -132,8 +134,8 @@ jobs:
           ## Installation
 
           ```bash
-          pnpm add @ultranomic/hook@${{ steps.version-check.outputs.version }}
-          npm install @ultranomic/hook@${{ steps.version-check.outputs.version }}
+          pnpm add ${{ steps.version-check.outputs.name }}@${{ steps.version-check.outputs.version }}
+          npm install ${{ steps.version-check.outputs.name }}@${{ steps.version-check.outputs.version }}
           ```
 
           ---
@@ -157,7 +159,7 @@ jobs:
           for i in {1..3}; do
             if pnpm publish --access public --no-git-checks; then
               echo "✅ Successfully published version ${{ steps.version-check.outputs.version }} to npm" | tee -a $GITHUB_STEP_SUMMARY
-              echo "📋 Install with: \`pnpm add @ultranomic/hook@${{ steps.version-check.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+              echo "📋 Install with: \`pnpm add ${{ steps.version-check.outputs.name }}@${{ steps.version-check.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
               break
             else
               echo "Publish attempt $i failed, retrying..."
@@ -175,7 +177,7 @@ jobs:
         if: steps.version-check.outputs.skip == 'false'
         run: |
           echo "🏷️ Created GitHub release: [v${{ steps.version-check.outputs.version }}](https://github.com/${{ github.repository }}/releases/tag/v${{ steps.version-check.outputs.version }})" >> $GITHUB_STEP_SUMMARY
-          echo "📦 Published to npm: [@ultranomic/hook@${{ steps.version-check.outputs.version }}](https://www.npmjs.com/package/@ultranomic/hook/v/${{ steps.version-check.outputs.version }})" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Published to npm: [${{ steps.version-check.outputs.name }}@${{ steps.version-check.outputs.version }}](https://www.npmjs.com/package/${{ steps.version-check.outputs.name }}/v/${{ steps.version-check.outputs.version }})" >> $GITHUB_STEP_SUMMARY
 
           # Add changelog to summary if available
           if [ -n "${{ steps.auto-version.outputs.changelog }}" ]; then

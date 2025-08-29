@@ -152,4 +152,49 @@ describe('Sync Hook', () => {
 
     assert.deepStrictEqual(receivedArgs, ['test', 42, testObj]);
   });
+
+  test('should allow setting logger after initialization', () => {
+    const hook = createSyncHooks<{ test: [string] }>();
+    let result = '';
+
+    hook.register('test', (value) => {
+      result = value;
+    });
+
+    hook.fire('test', 'hello');
+    assert.strictEqual(debugLogs.length, 0);
+
+    hook.setLogger(mockLogger);
+    hook.fire('test', 'world');
+
+    assert.strictEqual(result, 'world');
+    assert.strictEqual(debugLogs.length, 1);
+    assert.strictEqual(debugLogs[0], 'Fired hook test with actions: anonymous');
+  });
+
+  test('should allow updating logger after initialization', () => {
+    const hook = createSyncHooks<{ test: [string] }>({ logger: mockLogger });
+    let result = '';
+
+    hook.register('test', (value) => {
+      result = value;
+    });
+
+    hook.fire('test', 'hello');
+    assert.strictEqual(debugLogs.length, 1);
+
+    const newMockLogger = {
+      debug: (objectOrMessage: unknown, message?: string) => {
+        debugLogs.push('NEW_LOGGER: ' + (message || objectOrMessage));
+      },
+      error: mockLogger.error,
+    };
+
+    hook.setLogger(newMockLogger);
+    hook.fire('test', 'world');
+
+    assert.strictEqual(result, 'world');
+    assert.strictEqual(debugLogs.length, 2);
+    assert.strictEqual(debugLogs[1], 'NEW_LOGGER: Fired hook test with actions: anonymous');
+  });
 });

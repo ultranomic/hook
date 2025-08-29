@@ -13,6 +13,9 @@ pnpm test            # Run all tests using Node.js built-in test runner
 pnpm run format      # Format code using Prettier
 pnpm run prepublishOnly  # Full pipeline: clean → build → test
 
+# Run tests with coverage (Node 24 native coverage)
+node --experimental-test-coverage --test src/*.test.ts
+
 # Run specific test file
 node --test src/create-async-hooks.test.ts
 node --test src/create-sync-hooks.test.ts
@@ -32,7 +35,7 @@ This is a TypeScript library for managing synchronous and asynchronous hooks wit
 
 ### Core Design Patterns
 
-1. **Hook Registry Pattern**: Both `createAsyncHooks` and `createSyncHooks` return objects with `register`, `fire`, and `clear` methods. The registries use nested Maps internally: `Map<hookName, Map<order, actions[]>>`.
+1. **Hook Registry Pattern**: Both `createAsyncHooks` and `createSyncHooks` return objects with `register`, `fire`, `clear`, and `setLogger` methods. The registries use nested Maps internally: `Map<hookName, Map<order, actions[]>>`.
 
 2. **Type-Safe Generics**: Hook types are defined as `Record<string, unknown[]>` where keys are hook names and values are argument tuples. This enables full TypeScript inference for hook payloads.
 
@@ -56,7 +59,7 @@ Tests comprehensively cover:
 - Basic registration and firing
 - Order-based execution with multiple priorities
 - Error handling and isolation
-- Logger integration
+- Logger integration and post-initialization logger setting
 - Mixed sync/async actions (async hooks)
 - Complex payload handling
 
@@ -74,3 +77,6 @@ Mock loggers follow the interface: `{ debug: (obj, msg?) => void, error: (obj, m
 - When modifying tests, ensure logger mocks handle both `(message)` and `(object, message)` signatures
 - The `|| "anonymous"` fallback in action name logging is intentional (empty string functions)
 - Test files use `.test.ts` suffix and are excluded from npm package
+- **CRITICAL**: When making any code changes, ALWAYS update both CLAUDE.md and README.md to reflect the changes. This ensures documentation stays in sync with the codebase.
+- **REQUIRED**: Always add JSDoc comments for all public methods and functions. Use clear descriptions and document parameters and return values.
+- **REQUIRED**: Ensure 100% test coverage for all code changes. Every new method, function, and code path must have corresponding tests. Use `node --experimental-test-coverage --test src/*.test.ts` to verify coverage.

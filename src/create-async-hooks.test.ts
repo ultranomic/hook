@@ -167,6 +167,51 @@ describe('Async Hook', () => {
     }, testError);
   });
 
+  test('should allow setting logger after initialization', async () => {
+    const hook = createAsyncHooks<{ test: [string] }>();
+    let result = '';
+
+    hook.register('test', async (value) => {
+      result = value;
+    });
+
+    await hook.fire('test', 'hello');
+    assert.strictEqual(debugLogs.length, 0);
+
+    hook.setLogger(mockLogger);
+    await hook.fire('test', 'world');
+
+    assert.strictEqual(result, 'world');
+    assert.strictEqual(debugLogs.length, 1);
+    assert.strictEqual(debugLogs[0], 'Fired hook test with actions: anonymous');
+  });
+
+  test('should allow updating logger after initialization', async () => {
+    const hook = createAsyncHooks<{ test: [string] }>({ logger: mockLogger });
+    let result = '';
+
+    hook.register('test', async (value) => {
+      result = value;
+    });
+
+    await hook.fire('test', 'hello');
+    assert.strictEqual(debugLogs.length, 1);
+
+    const newMockLogger = {
+      debug: (objectOrMessage: unknown, message?: string) => {
+        debugLogs.push('NEW_LOGGER: ' + (message || objectOrMessage));
+      },
+      error: mockLogger.error,
+    };
+
+    hook.setLogger(newMockLogger);
+    await hook.fire('test', 'world');
+
+    assert.strictEqual(result, 'world');
+    assert.strictEqual(debugLogs.length, 2);
+    assert.strictEqual(debugLogs[1], 'NEW_LOGGER: Fired hook test with actions: anonymous');
+  });
+
   test('should clear all hooks', async () => {
     const hook = createAsyncHooks<{ test: [string] }>();
     let called = false;
