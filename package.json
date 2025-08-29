@@ -1,6 +1,6 @@
 {
   "name": "@ultranomic/hook",
-  "version": "1.3.4",
+  "version": "1.3.5",
   "description": "Lightweight TypeScript library for managing synchronous and asynchronous hooks with ordered execution",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
