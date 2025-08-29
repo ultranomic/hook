@@ -14,13 +14,13 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  validate:
     runs-on: ubuntu-latest
 
     strategy:
       fail-fast: false
       matrix:
-        node-version: [24]
+        node-version: ['24']
 
     steps:
       - name: Checkout repository
@@ -52,17 +52,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
+      - name: Type check
+        run: |
+          pnpm run typecheck
+          echo "🔍 Type check passed on Node.js ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+
       - name: Run full pipeline
         run: |
           pnpm run prepublishOnly
           echo "✅ Full pipeline passed on Node.js ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
 
-      - name: Run tests with coverage
-        run: |
-          pnpm run test:coverage
-          echo "📊 Test coverage verified on Node.js ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
-
-      - name: Verify 100% test coverage
+      - name: Run tests with coverage verification
         run: |
           # Extract coverage percentage from test output
           COVERAGE_OUTPUT=$(pnpm run test:coverage 2>&1)

@@ -15,6 +15,7 @@
     "clean": "rm -rf dist",
     "test": "node --test src/*.test.ts",
     "test:coverage": "node --experimental-test-coverage --test src/*.test.ts",
+    "typecheck": "tsgo --noEmit",
     "format": "prettier --write .",
     "prepublishOnly": "npm run clean && npm run build && npm test"
   },

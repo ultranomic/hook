@@ -187,10 +187,12 @@ This library follows a factory pattern where registry functions create typed hoo
 
 ## CI/CD Setup
 
-This repository includes GitHub Actions workflows for:
+This repository includes comprehensive GitHub Actions workflows for:
 
-- **CI**: Runs tests on Node.js 24 for all pull requests
-- **Publishing**: Automatically publishes to npm with auto-versioning when changes are pushed to main
+- **CI**: `validate` job runs type checking, tests with 100% coverage verification, and package validation on Node.js 24
+- **Publishing**: Automatically publishes to npm with AI-powered auto-versioning when changes are pushed to main
+- **Dependabot**: Weekly dependency updates with automatic merging when all CI checks pass
+- **Claude AI Integration**: Automated code reviews on PRs and interactive @claude assistance
 
 ### Setting up npm Publishing
 

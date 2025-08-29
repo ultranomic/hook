@@ -10,11 +10,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 pnpm run build        # Build TypeScript using tsgo (experimental TypeScript compiler)
 pnpm run clean        # Remove dist directory
 pnpm test            # Run all tests using Node.js built-in test runner
+pnpm run test:coverage # Run tests with coverage using Node.js native coverage
+pnpm run typecheck    # Type check without emitting files
 pnpm run format      # Format code using Prettier
 pnpm run prepublishOnly  # Full pipeline: clean → build → test
-
-# Run tests with coverage (Node 24 native coverage)
-node --experimental-test-coverage --test src/*.test.ts
 
 # Run specific test file
 node --test src/create-async-hooks.test.ts
@@ -67,9 +66,11 @@ Mock loggers follow the interface: `{ debug: (obj, msg?) => void, error: (obj, m
 
 ## CI/CD
 
-- **PR Checks**: Tests run on Node 24
+- **PR Checks**: `validate` job runs type checking, tests with 100% coverage verification, and package validation on Node 24
 - **Auto-publish**: Pushing to main with auto-versioning triggers npm publish
-- **Required Secrets**: `NPM_TOKEN` for publishing, `GEMINI_API_KEY` for auto-versioning
+- **Dependabot**: Weekly dependency updates with auto-merge when CI passes
+- **Claude AI Integration**: Automated code reviews and @claude assistance
+- **Required Secrets**: `NPM_TOKEN` for publishing, `GEMINI_API_KEY` for auto-versioning, `CLAUDE_CODE_OAUTH_TOKEN` for Claude workflows
 
 ## Important Notes
 
@@ -77,6 +78,6 @@ Mock loggers follow the interface: `{ debug: (obj, msg?) => void, error: (obj, m
 - When modifying tests, ensure logger mocks handle both `(message)` and `(object, message)` signatures
 - The `|| "anonymous"` fallback in action name logging is intentional (empty string functions)
 - Test files use `.test.ts` suffix and are excluded from npm package
-- **CRITICAL**: When making any code changes, ALWAYS update both CLAUDE.md and README.md to reflect the changes. This ensures documentation stays in sync with the codebase.
+- **CRITICAL**: When making ANY changes to the project (code, configuration, workflows, dependencies, etc.), ALWAYS update both CLAUDE.md and README.md to reflect the changes. This ensures documentation stays in sync with the entire project state.
 - **REQUIRED**: Always add JSDoc comments for all public methods and functions. Use clear descriptions and document parameters and return values.
 - **REQUIRED**: Ensure 100% test coverage for all code changes. Every new method, function, and code path must have corresponding tests. Use `node --experimental-test-coverage --test src/*.test.ts` to verify coverage.
