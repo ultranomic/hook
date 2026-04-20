@@ -13,7 +13,7 @@ importers:
         version: 7.0.0-dev.20260420.1
       prettier:
         specifier: ^3.6.2
-        version: 3.8.2
+        version: 3.8.3
 
 packages:
 
@@ -56,8 +56,8 @@ packages:
     resolution: {integrity: sha512-XYMYZ1OAvO1OWJMntCGW5yoJvJjdrsgmNJxXEPO3Za2kFmQ69TdHOAzg9adurMgAXNpaDWtf28bfEveMRnvpZA==}
     hasBin: true
 
-  prettier@3.8.2:
-    resolution: {integrity: sha512-8c3mgTe0ASwWAJK+78dpviD+A8EqhndQPUBpNUIPt6+xWlIigCwfN01lWr9MAede4uqXGTEKeQWTvzb3vjia0Q==}
+  prettier@3.8.3:
+    resolution: {integrity: sha512-7igPTM53cGHMW8xWuVTydi2KO233VFiTNyF5hLJqpilHfmn8C8gPf+PS7dUT64YcXFbiMGZxS9pCSxL/Dxm/Jw==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -94,4 +94,4 @@ snapshots:
       '@typescript/native-preview-win32-arm64': 7.0.0-dev.20260420.1
       '@typescript/native-preview-win32-x64': 7.0.0-dev.20260420.1
 
-  prettier@3.8.2: {}
+  prettier@3.8.3: {}
